@@ -20,7 +20,9 @@ new Vue({
     lessons: [],
     allLessons: [],
     loading: false,
-    error: ''
+    error: '',
+    sortBy: 'topic',
+    sortDir: 'asc'
   },
   created: function(){
     this.fetchLessons();
@@ -49,13 +51,32 @@ new Vue({
           this.lessons = data;
           this.allLessons = JSON.parse(JSON.stringify(data));
           this.loading = false;
+          this.applySort();
         }.bind(this))
         .catch(function(){
           this.lessons = JSON.parse(JSON.stringify(SAMPLE_LESSONS));
           this.allLessons = JSON.parse(JSON.stringify(SAMPLE_LESSONS));
           this.loading = false;
           this.error = '';
+          this.applySort();
         }.bind(this));
+    },
+    applySort: function(){
+      var key = this.sortBy;
+      var dir = this.sortDir === 'asc' ? 1 : -1;
+      this.lessons.sort(function(a,b){
+        var av = a[key];
+        var bv = b[key];
+        if (typeof av === 'string') av = av.toLowerCase();
+        if (typeof bv === 'string') bv = bv.toLowerCase();
+        if (av < bv) return -1 * dir;
+        if (av > bv) return 1 * dir;
+        return 0;
+      });
+    },
+    toggleOrder: function(){
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+      this.applySort();
     }
   }
 });
