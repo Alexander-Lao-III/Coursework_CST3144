@@ -30,6 +30,8 @@
     </section>
 
     <main v-if="!showCart">
+      <div v-if="loading" class="info">loading lessons</div>
+      <div v-if="error" class="error">{{ error }}</div>
       <ul class="lessons">
         <li v-for="lesson in lessons" :key="lesson._id" class="lesson">
           <div class="lesson-left">
@@ -63,8 +65,25 @@
           <button class="remove" @click="removeFromCart(idx)">remove</button>
         </li>
       </ul>
+      <form @submit.prevent="submitOrder" class="checkout-form" novalidate>
+        <div class="form-grid">
+          <div>
+            <label for="name">Name</label>
+            <input id="name" v-model="customer.name" required />
+            <div v-if="nameError" class="field-error">{{ nameError }}</div>
+          </div>
+          <div>
+            <label for="phone">Phone</label>
+            <input id="phone" v-model="customer.phone" required />
+            <div v-if="phoneError" class="field-error">{{ phoneError }}</div>
+          </div>
+        </div>
 
-      <button type="button" class="back-btn" @click="toggleCart">back to lessons</button>
+        <button type="submit" :disabled="!canCheckout">checkout</button>
+        <button type="button" class="back-btn" @click="toggleCart">back to lessons</button>
+      </form>
+
+      <div v-if="orderMessage" class="info">{{ orderMessage }}</div>
     </aside>
   </div>
 

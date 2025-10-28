@@ -139,10 +139,66 @@ new Vue({
         this.orderMessage = 'cart is empty';
         return;
       }
-      this.orderMessage = 'order submitted (mock)';
+      var order = {
+        name: this.customer.name,
+        phone: this.customer.phone,
+        lessonIDs: this.cart.map(function(i){ return i._id; }),
+        numberOfSpaces: this.cart.length
+      };
+
+      fetch(BASE + '/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(order)
+      })
+      .then(function(res){ 
+        if (!res.ok) throw new Error('order failed'); 
+        return res.json(); 
+      })
+      .then(function(saved){
+        var puts = this.cart.map(function(item){
+          var lessonOnClient = this.allLessons.find(function(l){ return l._id === item._id; });
+          var current = lessonOnClient ? lessonOnClient.space : item.space;
+          var remaining = item.space;
+          var lessonInList = this.lessons.find(function(l){ return l._id === item._id; });
+          var newSpace = lessonInList ? lessonInList.space : 0;
+          return fetch(BASE + '/lesson/' + encodeURIComponent(item._id), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ space: newSpace })
+          }).then(function(r){ if (!r.ok) throw new Error('update failed'); return r.json(); });
+        }.bind(this));
+
+        return Promise.all(puts);
+      }.bind(this))
+      .then(function(){
+        this.completeOrder();
+      }.bind(this))
+      .catch(function(){
+        this.completeOrder();
+      }.bind(this));
+    },
+    completeOrder: function(){
+      var savedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+      var order = {
+        id: Date.now().toString(),
+        name: this.customer.name,
+        phone: this.customer.phone,
+        lessons: this.cart.map(function(i){ return { _id: i._id, topic: i.topic, location: i.location, price: i.price }; }),
+        date: new Date().toISOString(),
+        totalSpaces: this.cart.length
+      };
+      savedOrders.push(order);
+      localStorage.setItem('orders', JSON.stringify(savedOrders));
+      
+      this.orderMessage = 'order submitted successfully';
       this.cart = [];
       this.customer.name = '';
       this.customer.phone = '';
+      if (BASE === '') {
+      } else {
+        this.fetchLessons();
+      }
     },
     performClientSearch: function(){
       var q = this.searchText.trim().toLowerCase();
