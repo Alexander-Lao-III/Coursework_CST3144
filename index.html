@@ -11,6 +11,42 @@
     <header>
       <h1>Extra-Curricular Activities</h1>
     </header>
+    <section class="controls">
+      <input placeholder="Search lessons" aria-label="search" />
+      <div class="sort">
+        <label for="sortBy">Sort</label>
+        <select id="sortBy" aria-label="sort by">
+          <option value="topic">subject</option>
+          <option value="location">location</option>
+          <option value="price">price</option>
+          <option value="space">spaces</option>
+        </select>
+        <button class="order-toggle">
+          <span class="arrow">↑</span>
+          <span class="text">asc</span>
+        </button>
+      </div>
+      <button class="cart-btn" disabled>Cart (0)</button>
+    </section>
+
+    <main>
+      <ul class="lessons">
+        <li class="lesson">
+          <div class="lesson-left">
+            <img class="lesson-icon" src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4da.png" alt="Sample" />
+            <div>
+              <div class="title">Subject: Sample Lesson</div>
+              <div class="meta">Location: Anywhere</div>
+              <div class="meta">Price: AED 0</div>
+              <div class="meta">Spaces: 0</div>
+            </div>
+          </div>
+          <div class="lesson-right">
+            <button disabled>Add to cart</button>
+          </div>
+        </li>
+      </ul>
+    </main>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.min.js"></script>
