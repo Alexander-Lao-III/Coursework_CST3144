@@ -35,7 +35,9 @@ new Vue({
     sortBy: 'topic',
     sortDir: 'asc',
     searchText: '',
-    searchModeBackend: true
+    searchModeBackend: true,
+    cart: [],
+    showCart: false
   },
   created: function(){
     this.fetchLessons();
@@ -98,6 +100,19 @@ new Vue({
     toggleOrder: function(){
       this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
       this.applySort();
+    },
+    addToCart: function(lesson){
+      if (!lesson || lesson.space <= 0) return;
+      this.cart.push(Object.assign({}, lesson));
+      lesson.space = lesson.space - 1;
+    },
+    removeFromCart: function(index){
+      var item = this.cart.splice(index,1)[0];
+      var found = this.lessons.find(function(l){ return l && item && l._id === item._id; });
+      if (found) found.space = found.space + 1;
+    },
+    toggleCart: function(){
+      this.showCart = !this.showCart;
     },
     performClientSearch: function(){
       var q = this.searchText.trim().toLowerCase();

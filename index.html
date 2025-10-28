@@ -12,41 +12,60 @@
       <h1>Extra-Curricular Activities</h1>
     </header>
     <section class="controls">
-      <input placeholder="Search lessons" aria-label="search" />
+      <input v-model="searchText" @input="onSearchInput" placeholder="Search lessons" aria-label="search" />
       <div class="sort">
         <label for="sortBy">Sort</label>
-        <select id="sortBy" aria-label="sort by">
+        <select id="sortBy" v-model="sortBy" @change="applySort" aria-label="sort by">
           <option value="topic">subject</option>
           <option value="location">location</option>
           <option value="price">price</option>
           <option value="space">spaces</option>
         </select>
-        <button class="order-toggle">
-          <span class="arrow">↑</span>
-          <span class="text">asc</span>
+        <button class="order-toggle" @click="toggleOrder" :aria-label="'toggle sort order to ' + (sortDir === 'asc' ? 'descending' : 'ascending')">
+          <span class="arrow">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
+          <span class="text">{{ sortDir === 'asc' ? 'asc' : 'desc' }}</span>
         </button>
       </div>
-      <button class="cart-btn" disabled>Cart (0)</button>
+      <button @click="toggleCart" :disabled="cart.length === 0" class="cart-btn">Cart ({{ cart.length }})</button>
     </section>
 
-    <main>
+    <main v-if="!showCart">
       <ul class="lessons">
-        <li class="lesson">
+        <li v-for="lesson in lessons" :key="lesson._id" class="lesson">
           <div class="lesson-left">
-            <img class="lesson-icon" src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4da.png" alt="Sample" />
+            <img class="lesson-icon" :src="iconFor(lesson)" :alt="lesson.topic" />
             <div>
-              <div class="title">Subject: Sample Lesson</div>
-              <div class="meta">Location: Anywhere</div>
-              <div class="meta">Price: AED 0</div>
-              <div class="meta">Spaces: 0</div>
+              <div class="title">Subject: {{ lesson.topic }}</div>
+              <div class="meta">Location: {{ lesson.location }}</div>
+              <div class="meta">Price: AED {{ lesson.price }}</div>
+              <div class="meta">Spaces: {{ lesson.space }}</div>
             </div>
           </div>
           <div class="lesson-right">
-            <button disabled>Add to cart</button>
+            <button @click="addToCart(lesson)" :disabled="lesson.space <= 0">Add to cart</button>
           </div>
         </li>
       </ul>
     </main>
+
+    <aside v-if="showCart" class="cart-panel">
+      <h2>Shopping cart</h2>
+      <div v-if="cart.length === 0">cart is empty</div>
+      <ul>
+        <li v-for="(item, idx) in cart" :key="item._id" class="cart-item">
+          <div class="info">
+            <img class="lesson-icon" :src="iconFor(item)" :alt="item.topic" />
+            <div>
+              <div class="title">{{ item.topic }}</div>
+              <div class="meta">{{ item.location }} · AED {{ item.price }}</div>
+            </div>
+          </div>
+          <button class="remove" @click="removeFromCart(idx)">remove</button>
+        </li>
+      </ul>
+
+      <button type="button" class="back-btn" @click="toggleCart">back to lessons</button>
+    </aside>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.min.js"></script>
