@@ -37,7 +37,9 @@ new Vue({
     searchText: '',
     searchModeBackend: true,
     cart: [],
-    showCart: false
+    showCart: false,
+    customer: { name: '', phone: '' },
+    orderMessage: ''
   },
   created: function(){
     this.fetchLessons();
@@ -113,6 +115,34 @@ new Vue({
     },
     toggleCart: function(){
       this.showCart = !this.showCart;
+      this.orderMessage = '';
+    },
+    validateName: function(){
+      if (!this.customer.name) return false;
+      return /^[A-Za-z ]+$/.test(this.customer.name);
+    },
+    validatePhone: function(){
+      if (!this.customer.phone) return false;
+      return /^[0-9]+$/.test(this.customer.phone);
+    },
+    submitOrder: function(){
+      this.orderMessage = '';
+      if (!this.validateName()){
+        this.orderMessage = 'invalid name';
+        return;
+      }
+      if (!this.validatePhone()){
+        this.orderMessage = 'invalid phone';
+        return;
+      }
+      if (this.cart.length === 0){
+        this.orderMessage = 'cart is empty';
+        return;
+      }
+      this.orderMessage = 'order submitted (mock)';
+      this.cart = [];
+      this.customer.name = '';
+      this.customer.phone = '';
     },
     performClientSearch: function(){
       var q = this.searchText.trim().toLowerCase();
@@ -146,6 +176,19 @@ new Vue({
         .catch(function(){
           this.performClientSearch();
         }.bind(this));
+    }
+  },
+  computed: {
+    canCheckout: function(){
+      return this.validateName() && this.validatePhone() && this.cart.length > 0;
+    },
+    nameError: function(){
+      if (!this.customer.name) return '';
+      return this.validateName() ? '' : 'letters only';
+    },
+    phoneError: function(){
+      if (!this.customer.phone) return '';
+      return this.validatePhone() ? '' : 'numbers only';
     }
   }
 });
