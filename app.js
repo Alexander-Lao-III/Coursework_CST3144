@@ -14,6 +14,17 @@ var SAMPLE_LESSONS = [
 	{ _id: '10', topic: 'Coding Club', location: 'Sharjah', price: 115, space: 8 }
 ];
 
+function debounce(func, wait){
+  var timeout;
+  return function(){
+    var context = this, args = arguments;
+    clearTimeout(timeout);
+    timeout = setTimeout(function(){
+      func.apply(context, args);
+    }, wait);
+  };
+}
+
 new Vue({
   el: '#app',
   data: {
@@ -22,10 +33,13 @@ new Vue({
     loading: false,
     error: '',
     sortBy: 'topic',
-    sortDir: 'asc'
+    sortDir: 'asc',
+    searchText: '',
+    searchModeBackend: true
   },
   created: function(){
     this.fetchLessons();
+    this.debouncedSearch = debounce(this.performSearch, 300);
   },
   methods: {
     iconFor: function(lesson){
@@ -41,6 +55,13 @@ new Vue({
       if (topic.indexOf('photo') !== -1) return 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4f7.png';
       if (topic.indexOf('coding') !== -1 || topic.indexOf('program') !== -1) return 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4bb.png';
       return 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4da.png';
+    },
+    onSearchInput: function(){
+      if (this.searchModeBackend){
+        this.debouncedSearch();
+      } else {
+        this.performClientSearch();
+      }
     },
     fetchLessons: function(){
       this.loading = true;
@@ -77,6 +98,39 @@ new Vue({
     toggleOrder: function(){
       this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
       this.applySort();
+    },
+    performClientSearch: function(){
+      var q = this.searchText.trim().toLowerCase();
+      if (!q){
+        this.lessons = JSON.parse(JSON.stringify(this.allLessons));
+        this.applySort();
+        return;
+      }
+      var filtered = this.allLessons.filter(function(l){
+        return (l.topic && l.topic.toLowerCase().indexOf(q) !== -1)
+          || (l.location && l.location.toLowerCase().indexOf(q) !== -1)
+          || String(l.price).indexOf(q) !== -1
+          || String(l.space).indexOf(q) !== -1;
+      });
+      this.lessons = filtered;
+      this.applySort();
+    },
+    performSearch: function(){
+      var q = this.searchText.trim();
+      if (!q){
+        this.fetchLessons();
+        return;
+      }
+      var url = BASE + '/search?q=' + encodeURIComponent(q);
+      fetch(url)
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          this.lessons = data;
+          this.applySort();
+        }.bind(this))
+        .catch(function(){
+          this.performClientSearch();
+        }.bind(this));
     }
   }
 });
