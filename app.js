@@ -1,6 +1,19 @@
 
 var BASE = '';
 
+var SAMPLE_LESSONS = [
+	{ _id: '1', topic: 'Basketball Training', location: 'Dubai', price: 120, space: 8 },
+	{ _id: '2', topic: 'Football Academy', location: 'Abu Dhabi', price: 100, space: 10 },
+	{ _id: '3', topic: 'Swimming Lessons', location: 'Sharjah', price: 110, space: 6 },
+	{ _id: '4', topic: 'Music Band Practice', location: 'Dubai', price: 95, space: 12 },
+	{ _id: '5', topic: 'Art & Crafts', location: 'Dubai', price: 80, space: 9 },
+	{ _id: '6', topic: 'Robotics Club', location: 'Dubai', price: 140, space: 7 },
+	{ _id: '7', topic: 'Chess Club', location: 'Remote', price: 60, space: 15 },
+	{ _id: '8', topic: 'Drama & Theatre', location: 'Abu Dhabi', price: 90, space: 10 },
+	{ _id: '9', topic: 'Photography Workshop', location: 'Dubai', price: 125, space: 6 },
+	{ _id: '10', topic: 'Coding Club', location: 'Sharjah', price: 115, space: 8 }
+];
+
 new Vue({
   el: '#app',
   data: {
@@ -8,6 +21,9 @@ new Vue({
     allLessons: [],
     loading: false,
     error: ''
+  },
+  created: function(){
+    this.fetchLessons();
   },
   methods: {
     iconFor: function(lesson){
@@ -23,19 +39,23 @@ new Vue({
       if (topic.indexOf('photo') !== -1) return 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4f7.png';
       if (topic.indexOf('coding') !== -1 || topic.indexOf('program') !== -1) return 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4bb.png';
       return 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4da.png';
+    },
+    fetchLessons: function(){
+      this.loading = true;
+      this.error = '';
+      fetch(BASE + '/lessons')
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          this.lessons = data;
+          this.allLessons = JSON.parse(JSON.stringify(data));
+          this.loading = false;
+        }.bind(this))
+        .catch(function(){
+          this.lessons = JSON.parse(JSON.stringify(SAMPLE_LESSONS));
+          this.allLessons = JSON.parse(JSON.stringify(SAMPLE_LESSONS));
+          this.loading = false;
+          this.error = '';
+        }.bind(this));
     }
   }
 });
-
-var SAMPLE_LESSONS = [
-	{ _id: '1', topic: 'Basketball Training', location: 'Dubai', price: 120, space: 8 },
-	{ _id: '2', topic: 'Football Academy', location: 'Abu Dhabi', price: 100, space: 10 },
-	{ _id: '3', topic: 'Swimming Lessons', location: 'Sharjah', price: 110, space: 6 },
-	{ _id: '4', topic: 'Music Band Practice', location: 'Dubai', price: 95, space: 12 },
-	{ _id: '5', topic: 'Art & Crafts', location: 'Dubai', price: 80, space: 9 },
-	{ _id: '6', topic: 'Robotics Club', location: 'Dubai', price: 140, space: 7 },
-	{ _id: '7', topic: 'Chess Club', location: 'Remote', price: 60, space: 15 },
-	{ _id: '8', topic: 'Drama & Theatre', location: 'Abu Dhabi', price: 90, space: 10 },
-	{ _id: '9', topic: 'Photography Workshop', location: 'Dubai', price: 125, space: 6 },
-	{ _id: '10', topic: 'Coding Club', location: 'Sharjah', price: 115, space: 8 }
-];
